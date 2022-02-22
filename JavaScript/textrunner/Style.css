@@ -1,0 +1,52 @@
+@font-face
+{
+    font-family: "Pixeled";
+    src: url("Pixeled.ttf");
+}
+
+*
+{
+    margin: 0;
+    padding: 0;
+}
+
+body, html
+{
+    width: 100%;
+    height: 100%;
+}
+
+#gameCanvas
+{
+    background-color: black;
+    display: block;
+    z-index: -1;
+}
+
+#name
+{
+    position:absolute;
+    font-family: Pixeled;
+    color: green;
+    bottom: 0; left: 7%;
+    width: 10%;
+    margin: 3px;
+    text-align: right;
+}
+
+input[type="text"]
+{ 
+    position:absolute;
+    font-family: Pixeled;
+    background-color: black;
+    color: green;
+    border-color: green;
+    width: 80%;
+    bottom: 0; right: 0;
+    margin: 3px;
+}
+
+input:focus
+{
+    outline: 0;
+}

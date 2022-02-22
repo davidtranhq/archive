@@ -1,0 +1,169 @@
+<canvas id="gc"></canvas>
+<script>
+window.onload = function() {
+	//create canvas
+	canv = document.getElementById("gc");
+	canv.width = 800;
+	canv.height = 600;
+	canv.style.border = "1px solid";
+	ctx = canv.getContext("2d");
+	//add controls
+	document.addEventListener("keydown", keyDown);
+	document.addEventListener("keyup", keyUp);
+	//constants
+	maxplat = 50
+	grav = 0.5;
+	fric = 0.7;
+	p = new Player('blue');
+	plat = [];
+	flags = {
+		left: false,
+		right: false,
+		up: false,
+		down: false,
+	}; //controller flags
+	for (i=0;i<maxplat;i++) {
+		plat.push(
+			{
+				x:Math.random()*canv.width,
+				y:Math.random()*canv.height,
+				w:Math.random()*100+30,
+				h:Math.random()*30+20,
+				c:'black'
+			}
+		);
+	} //create platforms
+	setInterval(update,1000/30);
+}
+
+function Player(color) {
+	this.x = 200;
+	this.y = 200;
+	this.w = 10;
+	this.h = 20;
+	this.xv = this.yv = 0;
+	this.onG = false;
+	this.color = color;
+}
+
+Player.prototype.update = function() {
+	//move player
+	this.x += this.xv;
+	this.y += this.yv;
+	//read controls
+	if (flags.left) {
+        this.xv = -2;
+    }
+    if (flags.right) {
+        this.xv = 2;
+    }
+	//apply physics
+	if (this.onG) {
+		this.xv *= fric;
+	} else {
+		this.yv += grav;
+	}
+	//detect collisions
+	this.onG = false;
+	for (i = 0; i < maxplat; i++) {
+		handleCollision(p, plat[i])
+	}
+	//map wrap
+	if (this.y > canv.height) {
+		this.y = 0;
+	} else if (this.y < 0) {
+		this.y = canv.height;
+	} else if (this.x < 0) {
+		this.x = canv.width;
+	} else if (this.x > canv.width) {
+		this.x = 0;
+	};
+}
+
+function collisionDirection(r1,r2){
+    var dx = (r1.x + r1.w/2) - (r2.x + r2.w/2); //xdist of centers
+    var dy = (r1.y + r1.h/2) - (r2.y + r2.h/2); //ydist of centers
+    var width = (r1.w+r2.w)/2;
+    var height=(r1.h+r2.h)/2;
+    var crossWidth = width*dy;
+    var crossHeight = height*dx;
+	
+    if (Math.abs(dx) <= width && Math.abs(dy) <= height) {
+        if (crossWidth > crossHeight) {
+            return (crossWidth > (-crossHeight)) ? 'bottom' : 'left';
+        } else {
+            return (crossWidth > (-crossHeight)) ? 'right' : 'top';
+        }
+    }
+    return false;
+}
+
+function handleCollision(p, plat) {
+	//check if collision
+	if (!(p.x+p.w < plat.x || p.x > plat.x+plat.w ||
+		p.y+p.h < plat.y || p.y > plat.y+plat.h)) { 
+		var col = collisionDirection(p,plat) //determine collision direction
+		if (col == 'left') {
+			p.x = plat.x-p.w;
+		} else if (col == 'right') {
+			p.x = plat.x+plat.w;
+		} else if (col == 'bottom') {
+			p.y = plat.y+plat.h;
+		} else if (col == 'top') {
+			p.y = plat.y-p.h+1; //+1 fixes rounding error
+			p.onG = true;
+			p.yv = 0;
+		}
+		plat.c = p.color;
+	}	
+}
+
+function keyDown(evt) {
+    switch(evt.keyCode) {
+        case 37:
+            flags.left = true;
+            break;
+        case 38:
+            if (p.onG) {
+                p.yv = -10;
+            }
+            break;
+        case 39:
+            flags.right = true;
+            break;
+    }
+}
+
+function keyUp(evt) {
+    switch(evt.keyCode) {
+        case 37:
+            flags.left = false;
+            break;
+        case 38:
+            if(p.yv < -3) {
+                p.yv = -3;
+            }
+            break;
+        case 39:
+            flags.right = false;
+            break;
+    }
+}
+
+function draw() {
+	ctx.clearRect(0,0,canv.width,canv.height);
+	//draw player
+	ctx.fillStyle = "blue";
+	ctx.fillRect(p.x,p.y,p.w,p.h);
+	//draw platforms
+	for (i = 0; i < maxplat; i++) {
+		ctx.fillStyle = plat[i].c;
+		ctx.fillRect(plat[i].x,plat[i].y,plat[i].w,plat[i].h);
+	}
+}
+
+function update() {
+	p.update();
+	draw();
+}
+</script>

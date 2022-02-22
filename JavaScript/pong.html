@@ -1,0 +1,117 @@
+<canvas id="gc"></canvas>
+<script>
+window.onload = function() {
+	canv = document.getElementById("gc");
+	canv.width = 500;
+	canv.height = 300;
+	ctx = canv.getContext("2d");
+	document.addEventListener("keydown", keyDown);
+	document.addEventListener("keyup", keyUp);
+	setInterval(game,10);
+}
+function Paddle(x,y) {
+	this.x = x;
+	this.y = y;
+	this.l = 50;
+	this.score = 0;
+	this.dir = 0;
+	this.update = function() {
+		this.y += this.dir;
+	}
+}
+function Ball(x,y,xv,yv) {
+	this.x = x;
+	this.y = y;
+	this.xv = xv;
+	this.yv = yv;
+	this.s = 5;
+	this.update = function() {
+		this.x += this.xv;
+		this.y += this.yv;
+	}
+}
+function drawLine(x1,y1,x2,y2) {
+	ctx.beginPath();
+	ctx.moveTo(x1,y1)
+	ctx.lineTo(x2,y2)
+	ctx.stroke();
+	ctx.closePath();
+}
+function random(min,max) {
+	var i = 0;
+	while (!i) {
+		i = Math.floor(Math.random()*(max-min+1)+min);
+	}
+	return i;
+}
+
+p1 = new Paddle(10,125);
+p2 = new Paddle(490,125);
+b = new Ball(250,150,random(-2,2),random(-2,2));
+
+function game() {
+	b.update();
+	p1.update();
+	p2.update();
+	if (p1.y < 0)
+		p1.y = 0;
+	else if (p1.y+p1.l > canv.height)
+		p1.y = canv.height-p1.l;
+	if (p2.y < 0)
+		p2.y = 0;
+	else if (p2.y+p2.l > canv.height)
+		p2.y = canv.height-p2.l;
+	if (b.y < 0 || b.y+b.s > canv.height)
+		b.yv = -b.yv;
+	if (b.x < 0) {
+		p2.score++;
+		b = new Ball(30,150,random(0,2),random(-2,2));
+	}
+	else if (b.x > canv.width) {
+		p1.score++;
+		b = new Ball(canv.width-30,150,random(-2,0),random(-2,2));
+	}
+	if ((b.x == p1.x && b.y > p1.y && b.y+b.s < p1.y+p1.l)
+	  || b.x+b.s == p2.x && b.y > p2.y && b.y+b.s < p2.y+p2.l)
+		b.xv = -b.xv;
+	ctx.fillStyle = "black";
+	ctx.fillRect(0,0,canv.width,canv.height);
+	ctx.strokeStyle = "white";
+	drawLine(p1.x,p1.y,p1.x,p1.y+p1.l);
+	drawLine(p2.x,p2.y,p2.x,p2.y+p2.l);
+	ctx.fillStyle = "white";
+	ctx.fillRect(b.x,b.y,b.s,b.s);
+	ctx.font="30px sans serif";
+	ctx.fillText(p1.score,200,50);
+	ctx.fillText(p2.score,300,50);
+}
+function keyDown(evt) {
+	switch(evt.keyCode) {
+		case 83:
+			p1.dir = 2;
+			break;
+		case 87:
+			p1.dir = -2;
+			break;
+		case 40:
+			p2.dir = 2;
+			break;
+		case 38:
+			p2.dir = -2;
+			break;
+	}
+}
+
+function keyUp(evt) {
+	switch(evt.keyCode) {
+		case 83:
+		case 87:
+			p1.dir = 0;
+			break;
+		case 40:
+		case 38:
+			p2.dir = 0;
+			break;
+	}
+}
+</script>

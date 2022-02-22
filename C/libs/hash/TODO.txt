@@ -1,0 +1,1 @@
+insert, resize, delete need pointer to pointer ht modify heap contents
